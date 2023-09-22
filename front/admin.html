@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração da API Bíblica</title>
+    <!-- Adicione os links para os estilos do Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.7/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-md p-8 bg-white shadow-lg rounded-lg">
+        <h1 class="text-3xl font-semibold text-center mb-6">Administração da API Bíblica</h1>
+        
+        <!-- Formulário para adicionar um novo livro -->
+        <form id="adicionarLivroForm" class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Nome do Livro:</label>
+            <input type="text" id="livroNome" name="nome" class="mt-1 block w-full py-2 px-3 border rounded-lg bg-gray-100" required>
+            
+            <label class="block text-sm font-medium text-gray-700 mt-4">Testamento:</label>
+            <input type="text" id="livroTestamento" name="testamento" class="mt-1 block w-full py-2 px-3 border rounded-lg bg-gray-100" required>
+            
+            <button type="submit" class="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-full">Adicionar Livro</button>
+        </form>
+        
+        <!-- Formulário para adicionar um novo capítulo -->
+        <form id="adicionarCapituloForm" class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Número do Capítulo:</label>
+            <input type="number" id="capituloNumero" name="numero" class="mt-1 block w-full py-2 px-3 border rounded-lg bg-gray-100" required>
+            
+            <label class="block text-sm font-medium text-gray-700 mt-4">Livro:</label>
+            <select id="livroId" name="livro_id" class="mt-1 block w-full py-2 px-3 border rounded-lg bg-gray-100" required>
+                <!-- As opções serão preenchidas dinamicamente com JavaScript -->
+            </select>
+            
+            <button type="submit" class="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-full">Adicionar Capítulo</button>
+         </form>
+        
+       <!-- Formulário para adicionar um novo versículo -->
+<form id="adicionarVersiculoForm">
+   <label class="block text-sm font-medium text-gray-700">Número do Versículo:</label>
+<input type="number" id="versiculoNumero" name="numero" class="mt-1 block w-full py-2 px-3 border rounded-lg bg-gray-100" required>
+
+<label class="block text-sm font-medium text-gray-700 mt-4">Texto do Versículo:</label>
+<textarea id="versiculoTexto" name="texto" class="mt-1 block w-full py-2 px-3 border rounded-lg bg-gray-100" required></textarea>
+   
+   <!-- Dropdowns de seleção de livro e capítulo -->
+   <label class="block text-sm font-medium text-gray-700 mt-4">Livro:</label>
+   <select id="versiculoLivroId" name="livro_id" class="mt-1 block w-full py-2 px-3 border rounded-lg bg-gray-100" required>
+       <!-- As opções serão preenchidas dinamicamente com JavaScript -->
+   </select>
+   
+   <label class="block text-sm font-medium text-gray-700 mt-4">Capítulo:</label>
+   <select id="versiculoCapituloId" name="capitulo_id" class="mt-1 block w-full py-2 px-3 border rounded-lg bg-gray-100" required>
+       <!-- As opções serão preenchidas dinamicamente com JavaScript -->
+   </select>
+   
+   <button type="submit" class="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-full">Adicionar Versículo</button>
+</form>
+
+
+
+    </div>
+
+    <script>
+      // Função para preencher o dropdown com os nomes dos livros
+      async function preencherLivros() {
+        const response = await fetch('http://localhost:5000/livros', { method: 'GET' });
+        const data = await response.json();
+    
+        // Preencha o dropdown de livros no formulário de capítulos
+        const livroId = document.getElementById('livroId');
+        const versiculoLivroId = document.getElementById('versiculoLivroId');
+    
+        data.livros.forEach((livro) => {
+          const option = document.createElement('option');
+          option.value = livro.id;
+          option.text = livro.nome;
+          livroId.appendChild(option);
+    
+          // Preencha o dropdown de livros no formulário de versículos
+          const versiculoOption = document.createElement('option');
+          versiculoOption.value = livro.id;
+          versiculoOption.text = livro.nome;
+          versiculoLivroId.appendChild(versiculoOption);
+        });
+    
+        // Chame a função para preencher os capítulos com base no livro selecionado
+        preencherCapitulos();
+      }
+
+      // Adicione um evento de envio ao formulário de adicionar capítulo
+document.getElementById('adicionarCapituloForm').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Evite a recarga da página
+
+    const capituloNumero = document.getElementById('capituloNumero').value;
+    const livroId = document.getElementById('livroId').value;
+
+    const response = await fetch(`http://localhost:5000/livros/${livroId}/capitulos`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            numero: parseInt(capituloNumero), // Certifique-se de que é um número
+        }),
+    });
+
+    const data = await response.json();
+    alert(data.mensagem);
+
+    // Limpe os campos após a adição do capítulo
+    document.getElementById('capituloNumero').value = '';
+   });
+    
+      // Adicione um evento de envio ao formulário de adicionar livro
+      document.getElementById('adicionarLivroForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+    
+        const livroNome = document.getElementById('livroNome').value;
+        const livroTestamento = document.getElementById('livroTestamento').value;
+    
+        const response = await fetch('http://localhost:5000/livros', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            nome: livroNome,
+            testamento: livroTestamento,
+          }),
+        });
+    
+        const data = await response.json();
+        alert(data.mensagem);
+    
+        // Limpe os campos após a adição do livro
+        document.getElementById('livroNome').value = '';
+        document.getElementById('livroTestamento').value = '';
+      });
+    
+      // Função para preencher o dropdown de capítulos com base no livro selecionado
+async function preencherCapitulos() {
+  const livroId = document.getElementById('versiculoLivroId').value;
+  const response = await fetch(`http://localhost:5000/livros/${livroId}/capitulos`, { method: 'GET' });
+  const data = await response.json();
+  const capituloDropdown = document.getElementById('versiculoCapituloId');
+
+  // Limpe o dropdown de capítulos anterior
+  capituloDropdown.innerHTML = '<option value="">Selecione um capítulo</option>';
+
+  if (data.capitulos.length > 0) {
+    data.capitulos.forEach((capitulo) => {
+      const option = document.createElement('option');
+      option.value = capitulo.numero; // Use o número do capítulo
+      option.text = `Capítulo ${capitulo.numero}`;
+      capituloDropdown.appendChild(option);
+    });
+  } else {
+    // Se não houver capítulos disponíveis para o livro selecionado, exiba uma mensagem
+    capituloDropdown.innerHTML = '<option value="">Nenhum capítulo disponível</option>';
+  }
+}
+
+    
+document.getElementById('adicionarVersiculoForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const versiculoNumero = document.getElementById('versiculoNumero').value;
+    const versiculoTexto = document.getElementById('versiculoTexto').value;
+    const livroId = document.getElementById('versiculoLivroId').value;
+    const capituloId = document.getElementById('versiculoCapituloId').value;
+
+    const response = await fetch(`http://localhost:5000/livros/${livroId}/capitulos/${capituloId}/versiculos`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            numero: parseInt(versiculoNumero), // Certifique-se de que é um número
+            texto: versiculoTexto, // Certifique-se de que é uma string
+        }),
+    });
+
+    const data = await response.json();
+    alert(data.mensagem);
+
+    // Limpe os campos após a adição do versículo
+    document.getElementById('versiculoNumero').value = '';
+    document.getElementById('versiculoTexto').value = '';
+});
+
+    
+      // Adicione um evento de mudança ao dropdown de livro no formulário de adicionar versículo
+      document.getElementById('versiculoLivroId').addEventListener('change', preencherCapitulos);
+    
+      // Chame a função para preencher os livros ao carregar a página
+      preencherLivros();
+    </script>
+    
+  
+</body>
+</html>
